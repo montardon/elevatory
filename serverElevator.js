@@ -11,22 +11,23 @@ var users = [];
 var directions = []
 var userHasEntered = false;
 var userHasExited = false;
+var doorsOpened = false;
 var go = -1;
 
 app.get('/call', function(req,res) {
-	console.log("call");
 	var params = querystring.parse(url.parse(req.url).query);
 	users.push(params['atFloor']);
 	directions.push(params['to']);
+	console.log("call "+params['atFloor']+" "+params['to']);
 	console.log(users);
 	console.log(directions);
 	res.writeHead(200);
 	res.end();
 });
 app.get('/go', function(req,res) {
-	console.log("go");
 	var params = querystring.parse(url.parse(req.url).query);
 	go = params['floorToGo'];
+	console.log("go "+go);
 	res.writeHead(200);
 	res.end();
 });
@@ -41,7 +42,8 @@ app.get('/userHasExited', function(req,res) {
 	userHasExited = true;
 });
 app.get('/reset', function(req,res) {
-	console.log("reset ==========================================");
+	var params = querystring.parse(url.parse(req.url).query);
+	console.log("reset "+params['cause']+"==========================================");
 	users = [];
 	directions = [];
 	floor = 0;
@@ -49,7 +51,7 @@ app.get('/reset', function(req,res) {
 	userHasEntered = false;
 	userHasExited = false;
 	res.writeHead(200);
-	res.end("")
+	res.end()
 });
 app.get('/nextCommand', function(req,res) {
 	console.log("nextCommand");
@@ -57,36 +59,52 @@ app.get('/nextCommand', function(req,res) {
 	if (users.length>0 || go >= 0) {
 		var dest = users[0];
 		if (go >= 0) {
-			dest = go;
-			res.end("CLOSE");
-		}
-		if (dest > floor) {
-			floor++;
-			res.end("UP");
-			console.log("UP");
-		} else if (dest == floor) {
-			// TODO: status door
-			if (userHasEntered == true) {
+			
+			if (doorsOpened == true) {
+				dest = go;
 				res.end("CLOSE");
-				userHasEntered = false;
-				console.log("CLOSE");
-			} else 
-			if (userHasExited == true) {
-				res.end("CLOSE");
-				userHasExited = false;
-				console.log("CLOSE");
-			} else {
-				res.end("OPEN");
-				go = -1;
-				console.log("OPEN");
+				doorsOpened = false;
 			}
 		} else {
-			res.end("DOWN");
-			console.log("DOWN");			
-			floor--;
+			if (dest > floor) {
+				floor++;
+				console.log("UP");
+				res.end("UP");				
+			} else if (dest == floor) {
+				// TODO: status door
+				if (userHasEntered == true) {
+					if (doorsOpened == true) {
+						console.log("CLOSE");
+						res.end("CLOSE");
+						userHasEntered = false;
+						doorsOpened = false;
+					}
+				} else 
+				if (userHasExited == true) {
+					if (doorsOpened == true) {
+						console.log("CLOSE");
+						res.end("CLOSE");
+						userHasExited = false;
+						doorsOpened = false;
+					}
+					
+				} else {
+					doorsOpened = true;
+					console.log("OPEN");
+					res.end("OPEN");
+					go = -1;
+					
+				}
+			} else {
+				console.log("DOWN");			
+				res.end("DOWN");				
+				floor--;
+			}
 		}
+	} else {
+		console.log("NOTHING");
+		res.end("NOTHING");
 	}
-	
 	
 });
 app.listen(80);
