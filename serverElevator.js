@@ -7,19 +7,22 @@ var app= express();
 
 var floor = 0;
 
-var users = [];
-var directions = []
+var calls = [];
+var directions = [];
+var gos = [];
 var userHasEntered = false;
 var userHasExited = false;
 var doorsOpened = false;
+var reachingUser = false;
+var releasingUser = false;
 var go = -1;
 
 app.get('/call', function(req,res) {
 	var params = querystring.parse(url.parse(req.url).query);
-	users.push(params['atFloor']);
+	calls.push(params['atFloor']);
 	directions.push(params['to']);
 	console.log("call "+params['atFloor']+" "+params['to']);
-	console.log(users);
+	console.log(calls);
 	console.log(directions);
 	res.writeHead(200);
 	res.end();
@@ -27,6 +30,7 @@ app.get('/call', function(req,res) {
 app.get('/go', function(req,res) {
 	var params = querystring.parse(url.parse(req.url).query);
 	go = params['floorToGo'];
+	gos.push(go);
 	console.log("go "+go);
 	res.writeHead(200);
 	res.end();
@@ -44,7 +48,7 @@ app.get('/userHasExited', function(req,res) {
 app.get('/reset', function(req,res) {
 	var params = querystring.parse(url.parse(req.url).query);
 	console.log("reset "+params['cause']+"==========================================");
-	users = [];
+	calls = [];
 	directions = [];
 	floor = 0;
 	go = -1;
@@ -56,8 +60,8 @@ app.get('/reset', function(req,res) {
 app.get('/nextCommand', function(req,res) {
 	console.log("nextCommand");
 	res.writeHead(200);
-	if (users.length>0 || go >= 0) {
-		var dest = users[0];
+	if (calls.length>0 || go >= 0) {
+		var dest = calls[0];
 		if (go >= 0) {
 			
 			if (doorsOpened == true) {
