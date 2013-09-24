@@ -39,6 +39,8 @@ app.get('/userHasEntered', function(req,res) {
 });
 app.get('/userHasExited', function(req,res) {
 	console.log("userHasExited");
+	res.writeHead(200);
+	res.end();
 	userHasExited = true;
 	go = -1;
 	users.splice(0,1);
