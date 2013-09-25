@@ -16,6 +16,16 @@ var doorsOpened = false;
 var reachingUser = false;
 var releasingUser = false;
 var go = -1;
+var min = 0;
+var max = 5;
+
+var updateMinMax = function(call) {
+	if (call > max) {
+		max = call;
+	} else if (call < min) {
+		min = call;
+	}
+};
 
 app.get('/call', function(req,res) {
 	var params = querystring.parse(url.parse(req.url).query);
@@ -24,6 +34,7 @@ app.get('/call', function(req,res) {
 	console.log("call "+params['atFloor']+" "+params['to']);
 	console.log(calls);
 	console.log(directions);
+	updateMinMax(params['atFloor']);
 	res.writeHead(200);
 	res.end();
 });
