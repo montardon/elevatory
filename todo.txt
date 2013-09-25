@@ -3,4 +3,6 @@ Principe de l'amélioration continue (un bourrin peut-il devenir un artiste ?)
 Idée 1 : ascenseur cyclique (0-1-2-3-4-5-4-3-2-1-0-..etc avec OPEN CLOSE (UP|DOWN)), peu importent les appels.
 Idée 2 : limiter les oscillations de l'ascenseur entre un min et un max différents de 0 et 5.
 Idée 3 : s'arrêter quand il n'y a plus aucun appel et que tous les utilisateurs ont été déposés à leur destination.
-Idée 4 :  ne pas s'arrêter aux étages où il n'y a pas d'appels et qui ne sont pas destinations.
+Idée 4 : ne pas s'arrêter aux étages où il n'y a pas d'appels et qui ne sont pas destinations.
+Idée 5 : prendre les utilisateurs dans le sens de parcours (UP|DOWN) de l'ascenseur i.e. s'arrêter à un étage avec UP si l'ascenseur
+est en montée.
