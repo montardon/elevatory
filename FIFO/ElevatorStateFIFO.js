@@ -7,6 +7,8 @@ ElevatorState : function () {
 
 	this.users = new Array();
 
+	this.countNothing = 0;
+
 	this.addCall = function(call) {
 		this.calls.push(call);
 	}
@@ -14,12 +16,20 @@ ElevatorState : function () {
 	this.userEntered = function() {
 		var i = 0;
 		
-		for(var call in this.calls) {
+		console.log(">>> calls ");
+		console.log(this.calls);
+		for (var i=0;i<this.calls.length;i++) {
+			var call = this.calls[i];
+			console.log("call ----------------");
+			console.log(call);
+			console.log(this.currentFloor);
+			
 			if (call.callFloor == this.currentFloor) {
 				this.calls.splice(i,1);
+				console.log("calls splice");
 				return;
 			}
-			i++;
+			
 		}
 		
 	}
@@ -27,12 +37,16 @@ ElevatorState : function () {
 	this.userExited=function() {
 		var i = 0;
 		
-		for(var user in this.users) {
-			if (call.floor == this.currentFloor) {
-				this.calls.splice(i,1);
+		for (var i=0;i<this.users.length;i++) {
+			var user = this.users[i];
+			console.log("users " + this.users);
+			console.log(user.floor + "==" + this.currentFloor);
+			if (user.floor == this.currentFloor) {
+				this.users.splice(i,1);
+				console.log("users " + this.users);
 				return;
 			}
-			i++;
+			
 		}
 		
 		
@@ -50,25 +64,26 @@ ElevatorState : function () {
 	
 	this.down = function() {
 		this.currentFloor--;
-		console.log("UP to" + this.currentFloor);
+		console.log("DOWN to" + this.currentFloor);
 		return "DOWN";
 	}
 	
 	this.open = function() {
-		doorOpened = true;
+		this.doorsOpened = true;
 		console.log("OPEN METHOD");
 		return "OPEN";
 	}
 	
 	this.close = function() {
-		doorOpened = false;
-		
+		this.doorsOpened = false;
+		console.log("CLOSE METHOD");
 		return "CLOSE";
 	}
 	
 	this.nextCommandCalls = function() {
-		for(call in this.calls) {
-			console.log(call + ' '  + this.currentFloor);
+		for (var i=0;i<this.calls.length;i++) {
+			var call = this.calls[i];
+			console.log("#" + call + "==" + this.currentFloor);
 			if (call.callFloor == this.currentFloor) {
 				return this.open();
 			}
@@ -83,7 +98,8 @@ ElevatorState : function () {
 	}
 	
 	this.nextCommandUser = function() {
-		for(user in this.users) {
+		for (var i=0;i<this.users.length;i++) {
+			var user = this.users[i];
 			if (user.floor == this.currentFloor) {
 				return this.open();
 			}
@@ -97,23 +113,34 @@ ElevatorState : function () {
 	}
 	
 	this.nextCommandCloseDoor = function() {
-		for(call in this.calls) {
-			if (call.callFloor == this.currentFloor) {
-				return "NOTHING";
+		if (this.countNothing <= 0) {
+			for (var i=0;i<this.calls.length;i++) {
+				var call = this.calls[i];
+				if (call.callFloor == this.currentFloor) {
+					console.log("CLOSE CANCELED : CAUSE CALL " + call.callFloor);
+					this.countNothing ++;
+					return "NOTHING";
+				}
+			}
+			
+			for (var i=0;i<this.users.length;i++) {
+				var user = this.users[i];
+				if (user.floor == this.currentFloor) {
+					console.log("CLOSE CANCELED : CAUSE user " + user.floor);
+					this.countNothing ++;
+					return "NOTHING";
+				}
 			}
 		}
 		
-		for(user in this.users) {
-			if (user.floor == this.currentFloor) {
-				return "NOTHING";
-			}
-		}
-		
+		this.countNothing = 0;
 		return this.close();
 	}
 	
 	this.nextCommand = function() {
 		command = "NOTHING";
+		
+		console.log("doorsOpened " + this.doorsOpened);
 		if (this.doorsOpened == true) {
 			command = this.nextCommandCloseDoor();
 		} else if (this.users.length > 0) {
@@ -122,6 +149,7 @@ ElevatorState : function () {
 			command = this.nextCommandCalls();
 		}
 		
+		console.log("=>" + command + "<=");
 		return command;
 	}
 }
