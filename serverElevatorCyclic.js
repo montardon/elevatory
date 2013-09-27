@@ -18,17 +18,11 @@ var max = 5;
 
 var updateMinMax = function(userCalls,userGos) {
 	var maxCalls = Math.max.apply(Math, userCalls);
-	max = maxCalls;
 	var maxGos = Math.max.apply(Math,userGos);
-	if (maxGos > max) {
-		max = maxGos;
-	}
+	max = Math.max(maxCalls,maxGos);
 	var minCalls = Math.min.apply(Math, userCalls);
-	min = minCalls;
 	var minGos = Math.min.apply(Math,userGos);
-	if (minGos < min) {
-		min = minGos;
-	}
+	min = Math.min(minCalls,minGos);
 };
 
 
@@ -77,6 +71,7 @@ app.get('/reset', function(req,res) {
 app.get('/nextCommand', function(req,res) {
 	console.log("nextCommand");	
 	res.writeHead(200);
+
 	if (step == 0) {
 	/*
 		if (calls.indexOf(floor.toString()) === -1 || gos.indexOf(floor.toString()) === -1) {
@@ -86,10 +81,22 @@ app.get('/nextCommand', function(req,res) {
 		*/
 			res.end("OPEN");
 			console.log("OPEN");
-			var indexGos = gos.indexOf(floor);
+			for(var i = gos.length - 1; i >= 0; i--) {
+				if(gos[i] === floor) {
+					gos.splice(i, 1);
+				}
+			}		
+			for(var i = calls.length - 1; i >= 0; i--) {
+				if(calls[i] === floor) {
+					calls.splice(i, 1);
+				}
+			}
+			updateMinMax(calls,gos);
+/*			var indexGos = gos.indexOf(floor);
 			gos.splice(indexGos, 1);
 			var indexCalls = calls.indexOf(floor);
 			calls.splice(indexCalls, 1);
+			*/
 			console.log("Calls "+calls);
 			console.log("Gos "+gos);
 		/*}*/
