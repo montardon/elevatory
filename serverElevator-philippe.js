@@ -128,13 +128,13 @@ app.get('/nextCommand', function(req,res) {
 		if (calls.indexOf(floor) != -1) {
 			console.log("Floor found in calls");
 			console.log("Calls length="+calls.length);
-			if  (calls.length >0 && calls[calls.length-1] === floor) {
+/*			if  (calls.length >0 && calls[calls.length-1] === floor) {*/
 				res.end("OPEN");
 				console.log("OPEN");
 				openDoors(floor);
 				updateMinMax(calls,gos);
 				return;
-			} 	
+/*			} 	*/
 		} else {
 			console.log("Floor not found in calls");
 		}
