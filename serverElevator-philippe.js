@@ -19,6 +19,10 @@ var gos = [];
 var min = 0;
 var max = 5;
 
+// Frequencies
+var ticks = 0;
+var callsFrequencies = [0,0,0,0,0,0];
+
 var updateMinMax = function(userCalls,userGos) {
 	var maxCalls = Math.max.apply(Math, userCalls);
 	var maxGos = Math.max.apply(Math,userGos);
@@ -37,6 +41,7 @@ app.get('/call', function(req,res) {
 	} else {
 		callsDown.push(parseInt(params['atFloor'],10));
 	}
+	callsFrequencies[parseInt(params['atFloor'])]++;
 	res.writeHead(200);
 	res.end();
 	updateMinMax(calls,gos);
@@ -63,8 +68,7 @@ app.get('/userHasExited', function(req,res) {
 	console.log("userHasExited");
 });
 app.get('/reset', function(req,res) {
-	res.writeHead(200);
-	res.end();
+	ticks = 0;
 	var params = querystring.parse(url.parse(req.url).query);
 	console.log("reset "+params['cause']+"==========================================");
 	floor = 0;
@@ -75,6 +79,9 @@ app.get('/reset', function(req,res) {
 	callsUp = [];
 	callsDown = [];
 	doorsOpened = false;
+	callsFrequencies = [0,0,0,0,0,0];
+	res.writeHead(200);
+	res.end();
 });
 
 var openDoors = function(floor) {
@@ -130,9 +137,24 @@ var move = function(afloor,res) {
 		console.log("UP");
 	}
 };
+app.get('/status', function(req,res) {
+	res.writeHead(200);
+	res.end();
+	var sum = callsFrequencies[0]+callsFrequencies[1]+callsFrequencies[2]+callsFrequencies[3]+callsFrequencies[4]+callsFrequencies[5];
+	console.log("status");
+	console.log("======");
+	console.log("5 "+callsFrequencies[5]);
+	console.log("4 "+callsFrequencies[4]);
+	console.log("3 "+callsFrequencies[3]);
+	console.log("2 "+callsFrequencies[2]);
+	console.log("1 "+callsFrequencies[1]);
+	console.log("0 "+callsFrequencies[0]);
+	console.log("Total : "+sum+" calls");
+});
 
 app.get('/nextCommand', function(req,res) {
 	console.log("nextCommand");	
+	ticks++;
 	res.writeHead(200);
 
 	// Pas d'appels et pas d'utilisateurs, on ne fait rien.
@@ -147,7 +169,7 @@ app.get('/nextCommand', function(req,res) {
 		// Doit-on ouvrir les portes ?
 		if ((direction === "UP" && callsUp.indexOf(floor) != -1) ||
 		    (direction === "DOWN" && callsDown.indexOf(floor) != -1)||
-			((floor === 0 || floor=== 5) && calls.indexOf(floor)!=-1)){
+			((floor === min || floor=== max) && calls.indexOf(floor)!=-1)){
 			console.log("Floor found in calls");
 			console.log("Calls length="+calls.length);
 /*			if  (calls.length >0 && calls[calls.length-1] === floor) {*/
