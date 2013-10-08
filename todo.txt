@@ -6,3 +6,4 @@ Idée 3 : s'arrêter quand il n'y a plus aucun appel et que tous les utilisateur
 Idée 4 : ne pas s'arrêter aux étages où il n'y a pas d'appels et qui ne sont pas destinations.
 Idée 5 : prendre les utilisateurs dans le sens de parcours (UP|DOWN) de l'ascenseur i.e. s'arrêter à un étage avec UP si l'ascenseur
 est en montée.
+Idée 6 : (Didier) il est possible de gagner du temps en effectuant un trajet différent pour certains cas.
