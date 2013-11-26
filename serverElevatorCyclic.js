@@ -6,8 +6,8 @@ var querystring = require('querystring');
 var app= express();
 
 var floor = 0;
-var step = 0;
 var direction = "UP";
+var doorsOpened = false;
 
 var calls = [];
 var directions = [];
@@ -43,8 +43,6 @@ app.get('/go', function(req,res) {
 	gos.push(parseInt(params['floorToGo'],10));
 	updateMinMax(calls,gos);
 	console.log("go "+params['floorToGo']);
-	console.log("Calls "+calls);
-	console.log("Gos "+gos);
 });
 app.get('/userHasEntered', function(req,res) {
 	res.writeHead(200);
@@ -62,57 +60,93 @@ app.get('/reset', function(req,res) {
 	var params = querystring.parse(url.parse(req.url).query);
 	console.log("reset "+params['cause']+"==========================================");
 	floor = 0;
-	step = 0;
 	min = 0;
 	max = 5;
 	calls = [];
 	gos = [];
+	doorsOpened = false;
 });
+
+var openDoors = function(floor) {
+	for(var i = gos.length - 1; i >= 0; i--) {
+		if(gos[i] === floor) {
+			gos.splice(i, 1);
+		}
+	}		
+	for(var i = calls.length - 1; i >= 0; i--) {
+		if(calls[i] === floor) {
+			calls.splice(i, 1);
+		}
+	}	
+	doorsOpened = true;
+};
+
+var closeDoors = function(res) {
+	res.end("CLOSE");
+	console.log("CLOSE");
+	doorsOpened = false;
+};
+
+var doNothing = function(res) {
+	res.end("NOTHING");
+	console.log("NOTHING");
+}
+
+var move = function(afloor,res) {
+	console.log("Floor: "+floor+" min "+min+" max "+max);
+	if (afloor >= max && direction == "UP") {
+		direction = "DOWN";
+	}
+	if (afloor <= min && direction == "DOWN") {
+		direction = "UP";
+	}
+	if (direction == "DOWN") {
+		floor--;
+		res.end("DOWN");
+		console.log("DOWN");
+	} else if (direction == "UP") {
+		floor++;
+		res.end("UP");
+		console.log("UP");
+	}
+};
+
 app.get('/nextCommand', function(req,res) {
 	console.log("nextCommand");	
 	res.writeHead(200);
 
-	if (step == 0) {
-	/*
-		if (calls.indexOf(floor.toString()) === -1 || gos.indexOf(floor.toString()) === -1) {
-			res.end("NOTHING");
-			console.log("NOTHING");
+	// Pas d'appels et pas d'utilisateurs, on ne fait rien.
+	if (calls === [] && gos === []) {
+		doNothing(res);
+	}
+	// Les portes sont ouvertes, on les ferme sinon on ne peut pas se déplacer
+	if (doorsOpened === true) {
+		closeDoors(res);
+	} else {
+		// Les portes sont fermées, on peut éventuellement se déplacer
+		// Doit-on ouvrir les portes ?
+		if (calls.indexOf(floor) != -1) {
+			console.log("Floor found in calls");
+			console.log("Calls length="+calls.length);
+			if  (calls.length >0 && calls[calls.length-1] === floor) {
+				res.end("OPEN");
+				console.log("OPEN");
+				openDoors(floor);
+				updateMinMax(calls,gos);
+				return;
+			} 	
 		} else {
-		*/
+			console.log("Floor not found in calls");
+		}
+		if (gos.indexOf(floor)!=-1) {
+			console.log("Floor found in gos");
+			console.log("Gos length="+gos.length);
 			res.end("OPEN");
 			console.log("OPEN");
-			for(var i = gos.length - 1; i >= 0; i--) {
-				if(gos[i] === floor) {
-					gos.splice(i, 1);
-				}
-			}		
-			for(var i = calls.length - 1; i >= 0; i--) {
-				if(calls[i] === floor) {
-					calls.splice(i, 1);
-				}
-			}
+			openDoors(floor);
 			updateMinMax(calls,gos);
-/*			var indexGos = gos.indexOf(floor);
-			gos.splice(indexGos, 1);
-			var indexCalls = calls.indexOf(floor);
-			calls.splice(indexCalls, 1);
-			*/
-			console.log("Calls "+calls);
-			console.log("Gos "+gos);
-		/*}*/
-		step =1;
-
-	} else if (step == 1) {
-		/*if (calls.indexOf(floor.toString()) === -1 || gos.indexOf(floor.toString()) === -1) {
-			res.end("NOTHING");
-			console.log("NOTHING");
-		} else {*/
-			res.end("CLOSE");
-			console.log("CLOSE");
-		/*}*/
-		step =2;
-		
-	} else if (step ==2) {
+			return;
+		}
 		console.log("Floor: "+floor+" min "+min+" max "+max);
 		if (floor >= max && direction == "UP") {
 			direction = "DOWN";
@@ -129,7 +163,7 @@ app.get('/nextCommand', function(req,res) {
 			res.end("UP");
 			console.log("UP");
 		}
-		step = 0;
+
 	}	
 });
 app.listen(80);
